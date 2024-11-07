@@ -5,6 +5,7 @@ void main() {
   runApp(MovingSquareApp());
 }
 
+// Main app widget
 class MovingSquareApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -22,28 +23,29 @@ class MovingSquareApp extends StatelessWidget {
   }
 }
 
+// Stateful widget to manage square movement
 class SquareMovement extends StatefulWidget {
   @override
   _SquareMovementState createState() => _SquareMovementState();
 }
 
 class _SquareMovementState extends State<SquareMovement> {
-  // Square's horizontal position (X-axis)
+  // square's position (x-axis)
   double _currentPositionX = 0;
 
-  // Size of the square
+  // just a random size for the square
   final double _squareSize = 50;
 
-  // Timer to handle movement updates
+  // Timer for smooth movement
   Timer? _movementTimer;
 
-  // Flag to check if square is moving
+  // flag to indicate if square is already moving
   bool _isMoving = false;
 
   @override
   void initState() {
     super.initState();
-    // Initializing square position in the center of the screen
+    // Center the square after the frame is loaded
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _currentPositionX = (MediaQuery.of(context).size.width / 2) - (_squareSize / 2);
@@ -51,20 +53,18 @@ class _SquareMovementState extends State<SquareMovement> {
     });
   }
 
-  // Move square to the left
-  void _moveSquareLeft() {
-    if (_isMoving) return; // Prevent movement if already in motion
+  // Move square to the left if possible
+  void _moveSqrLeft() {
+    if (_isMoving) return; // avoid multiple calls if already moving
     _isMoving = true;
 
-    // Start a timer to update square position periodically
     _movementTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       setState(() {
-        // If square can still move left, update its position
         if (_currentPositionX > 0) {
           _currentPositionX -= 20;
           if (_currentPositionX <= 0) {
-            _currentPositionX = 0; // Stop at leftmost point
-            _stopMovement();
+            _currentPositionX = 0;
+            _stopMovement(); // stops once leftmost edge is reached
           }
         } else {
           _stopMovement();
@@ -73,22 +73,20 @@ class _SquareMovementState extends State<SquareMovement> {
     });
   }
 
-  // Move square to the right
-  void _moveSquareRight() {
-    if (_isMoving) return; // Prevent movement if already in motion
+  // Move square to the right if possible
+  void _moveSqrRight() {
+    if (_isMoving) return; // avoid multiple calls if already moving
     _isMoving = true;
     final screenWidth = MediaQuery.of(context).size.width;
     final maxPositionX = screenWidth - _squareSize;
 
-    // Start a timer to update square position periodically
     _movementTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
       setState(() {
-        // If square can still move right, update its position
         if (_currentPositionX < maxPositionX) {
           _currentPositionX += 20;
           if (_currentPositionX >= maxPositionX) {
-            _currentPositionX = maxPositionX; // Stop at rightmost point
-            _stopMovement();
+            _currentPositionX = maxPositionX;
+            _stopMovement(); // stops once rightmost edge is reached
           }
         } else {
           _stopMovement();
@@ -97,23 +95,23 @@ class _SquareMovementState extends State<SquareMovement> {
     });
   }
 
-  // Stop square's movement
+  // Stop the square's movement
   void _stopMovement() {
-    _movementTimer?.cancel(); // Cancel the movement timer
+    _movementTimer?.cancel();
     _movementTimer = null;
     setState(() {
-      _isMoving = false; // Update moving status
+      _isMoving = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final double buttonContainerWidth = 200;
+    final buttonContainerWidth = 200; // space for the buttons
 
     return Center(
       child: Stack(
         children: [
-          // Animated square that moves horizontally
+          // Square that moves with animated positioning
           AnimatedPositioned(
             left: _currentPositionX,
             duration: Duration(milliseconds: 100),
@@ -133,20 +131,19 @@ class _SquareMovementState extends State<SquareMovement> {
               ),
             ),
           ),
-          // Row with buttons to move the square
+          // Control buttons for left and right movement
           Positioned(
             bottom: 50,
             left: MediaQuery.of(context).size.width / 2 - buttonContainerWidth / 2,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Button to move the square left
+                // Left button
                 ElevatedButton(
-                  onPressed: (_isMoving || _currentPositionX <= 0) ? null : _moveSquareLeft,
+                  onPressed: (_isMoving || _currentPositionX <= 0) ? null : _moveSqrLeft,
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                    backgroundColor:
-                    (_isMoving || _currentPositionX <= 0) ? Colors.transparent : Colors.blueAccent,
+                    backgroundColor: (_isMoving || _currentPositionX <= 0) ? Colors.transparent : Colors.blueAccent,
                     shadowColor: Colors.transparent,
                   ).copyWith(
                     overlayColor: MaterialStateProperty.all(Colors.blue.shade700),
@@ -157,8 +154,7 @@ class _SquareMovementState extends State<SquareMovement> {
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient:
-                      LinearGradient(colors: [Colors.red, Colors.orange]),
+                      gradient: LinearGradient(colors: [Colors.red, Colors.orange]),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -168,68 +164,45 @@ class _SquareMovementState extends State<SquareMovement> {
                         ),
                       ],
                     ),
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                     child: Text(
                       'Move Left',
-                      style:
-                      TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: Colors.white, fontSize: 18),
                     ),
                   ),
                 ),
                 SizedBox(width: 20),
-                // Button to move the square right
+                // Right button
                 ElevatedButton(
-                  onPressed:
-                  (_isMoving || _currentPositionX >= (MediaQuery.of(context).size.width - _squareSize))
-                      ? null : _moveSquareRight,
+                  onPressed: (_isMoving || _currentPositionX >= (MediaQuery.of(context).size.width - _squareSize)) ? null : _moveSqrRight,
                   style: ElevatedButton.styleFrom(
-                    padding:
-                    EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-                    backgroundColor:
-                    (_isMoving || _currentPositionX >= (MediaQuery.of(context).size.width - _squareSize))
-                        ? Colors.transparent : Colors.blueAccent,
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                    backgroundColor: (_isMoving || _currentPositionX >= (MediaQuery.of(context).size.width - _squareSize)) ? Colors.transparent : Colors.blueAccent,
                     shadowColor: Colors.transparent,
                   ).copyWith(
-                    overlayColor:
-                    MaterialStateProperty.all(Colors.blue.shade700),
-                    elevation:
-                    MaterialStateProperty.all(5),
-                    shape:
-                    MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(20),
+                    overlayColor: MaterialStateProperty.all(Colors.blue.shade700),
+                    elevation: MaterialStateProperty.all(5),
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     )),
                   ),
-                  child:
-                  Container(
-                    decoration:
-                    BoxDecoration(
-                      gradient:
-                      LinearGradient(colors:[Colors.orange, Colors.red]),
-                      borderRadius:
-                      BorderRadius.circular(20),
-                      boxShadow:[
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(colors: [Colors.orange, Colors.red]),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
                         BoxShadow(
-                          color:
-                          Colors.black26,
-                          blurRadius:
-                          4,
-                          offset:
-                          Offset(2,2),
-                        )
+                          color: Colors.black26,
+                          blurRadius: 4,
+                          offset: Offset(2, 2),
+                        ),
                       ],
                     ),
-                    padding:
-                    EdgeInsets.symmetric(horizontal:
-                    20, vertical:
-                    10),
-                    child:
-                    Text('Move Right',
-                        style:
-                        TextStyle(color:
-                        Colors.white, fontSize:
-                        18)),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    child: Text(
+                      'Move Right',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
                   ),
                 ),
               ],
